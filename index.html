@@ -1,0 +1,13 @@
+<script src="jquery.min.js"></script>
+<script type="text/javascript">
+    $.ajax({
+        url:'http://pharmacy.043u.cn/hapi/Registration/departmentsList',
+        //headers: {'Cookie' : 'pgv_pvi=381151232; Hm_lvt_9b49ad86478092fd8af1b5afde907e48=1565156710' },
+        dataType:'json',
+        type:'POST',
+        data:{},
+        success:function(r){
+            alert(r.msg);
+        }
+    })
+</script>
