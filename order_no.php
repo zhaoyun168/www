@@ -48,7 +48,21 @@ function get_md5_order()
     return md5(uniqid(md5(microtime(true)), true));
 }
 
-echo $order_no = get_md5_order();
+/**
+ * 生成流水号
+ * @param string $prefix 流水号前缀
+ * @return string         流水号
+ */
+function generate_serial_no($prefix = 'GZH')
+{
+    $prefix    = !empty($prefix) ? $prefix : '';
+    $serial_no = $prefix . substr(strtotime(date('YmdHis', time())), 5) .
+        substr(microtime(), 2, 6) . sprintf('%04d', rand(0, 9999));
+
+    return $serial_no;
+}
+
+echo $order_no = generate_serial_no();
 
 
 file_put_contents('order_no', $order_no . "\r\n", FILE_APPEND);
