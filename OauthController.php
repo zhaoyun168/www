@@ -20,6 +20,7 @@ class OauthController extends HomeBaseController
  
     public function __construct()
     {
+        parent::__construct();
         if (!($this->_instance instanceof LoggerClient)) {
             $this->_instance = new LoggerClient();
         }
@@ -35,8 +36,12 @@ class OauthController extends HomeBaseController
      */
     public function token()
     {
+        // 用户凭据
         $this->server->addGrantType(new \OAuth2\GrantType\ClientCredentials($this->storage));
+        // 授权码 有效期只有30秒
         $this->server->addGrantType(new \OAuth2\GrantType\AuthorizationCode($this->storage));
+        // 刷新令牌
+        $this->server->addGrantType(new \OAuth2\GrantType\RefreshToken($this->storage));
         $this->server->handleTokenRequest(\OAuth2\Request::createFromGlobals())->send();
     }
  
@@ -54,7 +59,7 @@ class OauthController extends HomeBaseController
         //echo "User ID associated with this token is {$token['user_id']}";
         
         $user_info = [
-            'user_id' => 1,
+            'user_id' => $token['user_id'],
             'user_name' => 'tianyu',
             'user_profiles' => 'PHP architect',
         ];
@@ -62,6 +67,10 @@ class OauthController extends HomeBaseController
         echo json_encode($user_info);
     }
  
+    /**
+     * 获取授权码
+     * @return [type] [description]
+     */
     public function authorize()
     {
         $request = \OAuth2\Request::createFromGlobals();
@@ -73,8 +82,8 @@ class OauthController extends HomeBaseController
             exit();
         }
         // display an authorization form
-        if($_GET['authorized']){
-                $is_authorized = ($_GET['authorized']=='yes');
+        if($_POST['authorized']){
+                $is_authorized = ($_POST['authorized']=='yes');
                 $userid = 1;  //用户的id
                 $this->server->handleAuthorizeRequest($request, $response, $is_authorized,$userid);
                 if ($is_authorized) {
@@ -86,14 +95,21 @@ class OauthController extends HomeBaseController
                     $response->send();exit();
                 
                 }else{
+                    echo '授权失败';
                    //没有授权
                 }
         }else{
             //展示授权视图
-            exit('<form method="post"><label>Do You Authorize TestClient?</label><input name="authorized" type="submit" value="yes" /> <input name="authorized" type="submit" value="no" /></form>'); 
+            //exit('<form method="post"><label>Do You Authorize TestClient?</label><input name="authorized" type="submit" value="yes" /> <input name="authorized" type="submit" value="no" /></form>'); 
+            
+            return $this->fetch();
        } 
    } 
 
+   /**
+    * 获取令牌、并获取用户信息
+    * @return [type] [description]
+    */
    public function oauth()
     {
         //1.得到授权码(Authorization Code)
